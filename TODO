@@ -1,0 +1,5 @@
+Error treatment:
+1. What if there is no file (part of the libconfig-dev package)?
+2. What if conf-file does not have the requested option/variable, or
+3. it exists, but has a different type?
+4. see todo.txt
