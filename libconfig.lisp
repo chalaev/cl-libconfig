@@ -1,6 +1,4 @@
-;; Note: the file is in the middle of reconstruction, see write-new
-
-;; libconfig/libconfig.lisp Time-stamp: <2015-11-03 18:46 EST by Oleg SHALAEV http://chalaev.com >
+;; libconfig/libconfig.lisp Time-stamp: <2016-05-19 21:42 EDT by Oleg SHALAEV http://chalaev.com >
 (in-package #:libconfig)
 
 (defun %config-root-setting (cfgP)
@@ -22,7 +20,7 @@
 (define-condition config-parse-error   (error) ((message :initarg :message :reader message)))
 ;; ← to do: make these condition classes more sophisticated
 
-(defun read-conf-file (fileName cfg); reading config file
+(defun read-conf-file (fileName cfg); reading config file  ok
   (let ((fName (cffi:foreign-string-alloc fileName)))
     (when (= config-false (%configReadFile cfg fName))
       (case (cffi:foreign-slot-value cfg '(:struct config-t) 'error-type)
@@ -53,27 +51,25 @@
 
 (defun create-conf-from-file (fileName)
   (let ((cfg (create-empty-conf)))
-    (read-conf-file fileName cfg); this line returns nil value
+    (read-conf-file fileName cfg)
     cfg))
 
 (defun destroy-conf-object (cfg)  "frees the memory allocated for the config-t object"
   (%ConfigDestroy cfg)
   (cffi-sys:foreign-free cfg))
 
-
 (defun read-conf-string (cfgStruc paramName); this function perhaps is not needed because its functionality is duplicated by (more general) read-structure
   (cffi:with-foreign-pointer-as-string (ant 255)
     (cffi:with-foreign-pointer (buf psi); pointer to a pointer
       (if (= config-false (%lookupString cfgStruc paramName buf))
-	(case (cffi:foreign-slot-value cfg '(:struct config-t) 'error-type)
+	(case (cffi:foreign-slot-value cfgStruc '(:struct config-t) 'error-type)
 	  (:config-err-file-io (error 'conf-file-read-error "could not read config file"))
 	  (:config-err-parse   (error 'config-parse-error  "parse error on config file ~s, line ~d: ~s"
-				      (cffi:foreign-slot-value cfg '(:struct config-t) 'error-file)
-				      (cffi:foreign-slot-value cfg '(:struct config-t) 'error-line)
-				      (cffi:foreign-slot-value cfg '(:struct config-t) 'error-text)))
+				      (cffi:foreign-slot-value cfgStruc '(:struct config-t) 'error-file)
+				      (cffi:foreign-slot-value cfgStruc '(:struct config-t) 'error-line)
+				      (cffi:foreign-slot-value cfgStruc '(:struct config-t) 'error-text)))
 	  (otherwise  (error "unspecified libconfig error, perhaps the specified parameter not found" )))
 	(setf ant (cffi:mem-ref buf :pointer))))))
-;; ← нужны аналогичные функции д.б. для других типов данных
 
 (defun read-subconf-string (cfgStruc paramName)
   (cffi:with-foreign-pointer-as-string (ant 255)
@@ -97,45 +93,43 @@
     (%CSlookupBool cfgStruc paramName buf)
     (cffi:mem-ref buf :boolean)))
 
-(defun read-structure (cfgS); high-level reader, reads any structures, including вложенные
+(defun read-structure (cfgS); high-level reader, reads any structures, including nested (вложенные)
   (let ((stt (cffi:foreign-slot-value cfgS '(:struct config-setting-t) 'type)))
-    (case stt
-      (:config-type-list
-       (loop for i from 0 for element = (setting-nth cfgS i) while (not (cffi-sys:null-pointer-p element)) collect (read-structure element)))
-      (:config-type-array
-       (loop for i from 0 for element = (setting-nth cfgS i) while (not (cffi-sys:null-pointer-p element)) collect (read-structure element)))
-      (:config-type-group
-       (let ((table (make-hash-table :test 'equal)))
-	 (loop for i from 0 for element = (setting-nth cfgS i) while (not (cffi-sys:null-pointer-p element))
-	    do (setf (gethash (setting-name element) table) (read-structure element)))
-	 table))
-      (:config-type-float (%getFloat cfgS))
-      (:config-type-int (%getInt cfgS))
-      (:config-type-long (%getLong cfgS))
-      (:config-type-string (%getString cfgS))
-      (:config-type-bool (%getBool cfgS))
-      (otherwise  (error "libconfig: unknown structure type ~a" stt)))))
+    (if
+	(or
+	 (equal stt :config-type-list); may be I should change "equal"→"=" here
+	 ;; (equal stt :config-type-none)
+	 (equal stt :config-type-array))
+	(loop for i from 0 for element = (setting-nth cfgS i) while (not (cffi-sys:null-pointer-p element)) collect (read-structure element))
+      (case stt
+	    (:config-type-group
+	     (let ((table (make-hash-table :test 'equal)))
+	       (loop for i from 0 for element = (setting-nth cfgS i) while (not (cffi-sys:null-pointer-p element))
+		     do (setf (gethash (setting-name element) table) (read-structure element)))
+	       table))
+	    (:config-type-float (%getFloat cfgS))
+	    (:config-type-int (%getInt cfgS))
+	    (:config-type-long (%getLong cfgS))
+	    (:config-type-string (%getString cfgS))
+	    (:config-type-bool (%getBool cfgS))
+	    (otherwise  (error "libconfig: unknown structure type ~a" stt)))))); tested 2016-06-01
 
 (defmacro with-read-config-file (name &rest body)
-  (setf cfg (gensym)); unique variable name, also used in other macros
-  `(let ((cfg (create-conf-from-file ,name)));; will raise exception on error
-    (progn ,@body)
-    (destroy-conf-object cfg)))
-;;************* предстоит реализовать следующие давно задуманные функции
-;; (defun sections cFile &key (section 'nil)); по умолчанию исследуем корневой конфиг. каталог
-;; ;если речь идёт не о корневой секции, то section -- это массив [секция,подсекция,подподсекция,...]
-;; (defun entries cFile &key (section 'nil))
-;; (defun getVarible  cFile varName &key (section 'nil))
-;; (defun setVarible cFile varName &key (section 'nil))
-;; (defun createSection cFile secName &key (section 'nil))
-;; ; ещё функции:
-;; (defun flush () "" ); записать изменения в конфигурации
+  (setf cfg (gensym)) (setf root (gensym)) ; unique variable names, also used in other macros
+  `(let* ((,cfg (create-conf-from-file ,name));; will raise exception on error
+	  (,root (%config-root-setting ,cfg)))
+     (progn ,@body)
+    (destroy-conf-object ,cfg)))
 
 (defmacro read-setting (parName &key (default)); to be used from inside of with-read-config-file
-  `(let ((confstruc (config-lookup-from cfg ,parName)))
+  `(let ((confstruc (config-lookup-from ,root ,parName)))
      (if (cffi-sys:null-pointer-p confstruc)
 	 ,default
 	 (read-structure confstruc))))
+
+(defun read-file (fName); high-level reader, reads whole file
+  (read-structure (%config-root-setting (create-conf-from-file fName)))); tested 2016-06-01
+;; ← should it (destroy-conf-object cfg) ?
 
 (defmacro with-write-config-file (name &rest body)
   (setf root (gensym))

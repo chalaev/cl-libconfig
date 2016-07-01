@@ -2,7 +2,6 @@
 ;; libconfig/API.lisp Time-stamp: <2015-11-03 14:43 EST by Oleg SHALAEV http://chalaev.com >
 ;; see /usr/include/libconfig.h
 (in-package #:libconfig)
-;; for every function I write a short comment indicating where it is used
 (cffi:defcfun ("config_init" init-conf-object) :void (cfgP :pointer))
 (cffi:defcfun ("config_destroy" %ConfigDestroy) :void (cfgP :pointer))
 (cffi:defcfun ("config_read_file" %configReadFile)  :int  (cfgP :pointer) (configFileName :string))
@@ -22,17 +21,9 @@
 (cffi:defcfun ("config_setting_get_bool" %getBool) :boolean (cfgP :pointer))
 
 ;; Function: config_setting_t * config_lookup (const config_t * config, const char * path)
-;;(cffi:defcfun ("config_lookup" config-lookup) :pointer (cfgP :pointer) (property :string)); ; memory fault !!!
-;;     This function locates the setting in the configuration config specified by the path path. It returns a pointer to the config_setting_t structure on success, or NULL if the setting was not found.
-
+(cffi:defcfun ("config_lookup" config-lookup) :pointer (cfgP :pointer) (property :string))
 ;; Function: config_setting_t * config_setting_lookup (const config_setting_t * setting, const char * path)
 (cffi:defcfun ("config_lookup_from" config-lookup-from) :pointer (cfgP :pointer) (property :string))
-;; This function locates a setting by a path path relative to the setting setting. It returns a pointer to the config_setting_t structure on success, or NULL if the setting was not found.
-
-;; I do not understand why one needs config_setting_lookup_string function, if there are config_setting_get_* ? →
-;; These functions look up the value of the child setting named name of the setting setting. They store the value
-;; at value and return CONFIG_TRUE on success. If the setting was not found or if the type of the value did not
-;; match the type requested, they leave the data pointed to by value unmodified and return CONFIG_FALSE. →
 (cffi:defcfun ("config_setting_lookup_string" %CSlookupString)  :int (cfgP :pointer) (property :string) (value :pointer))
 (cffi:defcfun ("config_setting_lookup_int" %CSlookupInt)  :int (cfgP :pointer) (property :string) (value :pointer))
 (cffi:defcfun ("config_setting_lookup_int64" %CSlookupLong)  :int (cfgP :pointer) (property :string) (value :pointer))
@@ -65,17 +56,3 @@
 ;; (defparameter cfg (libconfig:create-conf-from-file "test-3.conf"))
 ;; (libconfig:read-conf-string cfg "material")
 ;; (libconfig:destroy-conf-object cfg)
-
-
-;;==============
-;; STYLE-WARNING:
-;; bare references to struct types are deprecated. Please use
-;; (:POINTER (:STRUCT CONFIG-T)) or
-;; (:STRUCT CONFIG-T) instead.
-
-;; (defun config-error (cfgStruc) (warn "config-error is not yet written")); to be written
-
-;; http://www.hyperrealm.com/libconfig/libconfig_manual.html
-;; Function: void config_set_options (config_t *config, int options)
-;; Function: int config_get_options (config_t *config)
-;; ...... etc.
