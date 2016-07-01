@@ -1,0 +1,19 @@
+Time-stamp: <2016-06-18 10:57 EDT by Oleg SHALAEV http://chalaev.com >
+
+This package allows using standard libconfig library in Common LISP.
+
+Apart from its usage as a handy configuration tool, libconfig is also a universal language for communication between programs written in different programming
+languages. Also it serves me as a data storage interface.
+
+Requires linux packages: libconfig-dev
+
+* Quick start
+I assume that sbcl is already installed and quicklisp resides in the home directory.
+My lisp is also installed locally, ~/local/bin/sbcl
+
+1. For Debian and Ubuntu linux: apt-get install libconfig-dev
+2. Place the files API.lisp grovel.lisp libconfig.lisp package.lisp libconfig.asd
+   into the direcory ~/quicklisp/local-projects/libconfig/
+3. cd tests/
+4. ~/local/bin/sbcl --load 1.lisp
+5. Now examine 1.lisp, 1.conf and newly created ~/tmp.conf
