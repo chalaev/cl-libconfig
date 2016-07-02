@@ -96,23 +96,23 @@
 (defun read-structure (cfgS); high-level reader, reads any structures, including nested (вложенные)
   (let ((stt (cffi:foreign-slot-value cfgS '(:struct config-setting-t) 'type)))
     (if
-	(or
-	 (equal stt :config-type-list); may be I should change "equal"→"=" here
-	 ;; (equal stt :config-type-none)
-	 (equal stt :config-type-array))
-	(loop for i from 0 for element = (setting-nth cfgS i) while (not (cffi-sys:null-pointer-p element)) collect (read-structure element))
-      (case stt
-	    (:config-type-group
-	     (let ((table (make-hash-table :test 'equal)))
-	       (loop for i from 0 for element = (setting-nth cfgS i) while (not (cffi-sys:null-pointer-p element))
-		     do (setf (gethash (setting-name element) table) (read-structure element)))
-	       table))
-	    (:config-type-float (%getFloat cfgS))
-	    (:config-type-int (%getInt cfgS))
-	    (:config-type-long (%getLong cfgS))
-	    (:config-type-string (%getString cfgS))
-	    (:config-type-bool (%getBool cfgS))
-	    (otherwise  (error "libconfig: unknown structure type ~a" stt)))))); tested 2016-06-01
+     (or
+      (equal stt :config-type-list); may be I should change "equal"→"=" here
+      ;; (equal stt :config-type-none)
+      (equal stt :config-type-array))
+     (loop for i from 0 for element = (setting-nth cfgS i) while (not (cffi-sys:null-pointer-p element)) collect (read-structure element))
+     (case stt
+       (:config-type-group
+	(let ((table (make-hash-table :test 'equal)))
+	  (loop for i from 0 for element = (setting-nth cfgS i) while (not (cffi-sys:null-pointer-p element))
+	     do (setf (gethash (intern (string-upcase (setting-name element))) table) (read-structure element)))
+	  table))
+       (:config-type-float (%getFloat cfgS))
+       (:config-type-int (%getInt cfgS))
+       (:config-type-long (%getLong cfgS))
+       (:config-type-string (%getString cfgS))
+       (:config-type-bool (%getBool cfgS))
+       (otherwise  (error "libconfig: unknown structure type ~a" stt)))))); tested 2016-06-01
 
 (defmacro with-read-config-file (name &rest body)
   (setf cfg (gensym)) (setf root (gensym)) ; unique variable names, also used in other macros

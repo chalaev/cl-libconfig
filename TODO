@@ -2,6 +2,3 @@
 2. Extend libconfig syntax by introducing new functions:
    a. {Add,Subtract}{Set,Element}{From,To}Set
    b. Arithmetics: Times, Divide, Add, Subtract. Arguments might be constants defined elsewhere in the config file.
-3. Error treatment:
-   a. inexistent conf file
-   b. conf file does not define the specified variable/option
