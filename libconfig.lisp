@@ -1,4 +1,5 @@
-;; libconfig/libconfig.lisp Time-stamp: <2016-05-19 21:42 EDT by Oleg SHALAEV http://chalaev.com >
+;; libconfig/libconfig.lisp Time-stamp: <2016-07-03 13:44 EDT by Oleg SHALAEV http://chalaev.com >
+;; 2016-07-03  after I changed config-lookup-from → config-lookup, tests fail
 (in-package #:libconfig)
 
 (defun %config-root-setting (cfgP)
@@ -14,13 +15,12 @@
 (defun setting-length (subcfg)
   (loop for i from 0 for element = (setting-nth subcfg i) while (not (cffi-sys:null-pointer-p element)) summing 1))
 
-;; Let us define exceptions:
 (define-condition conf-entry-not-found (error) ((message :initarg :message :reader message)))
 (define-condition conf-file-read-error (error) ((message :initarg :message :reader message)))
 (define-condition config-parse-error   (error) ((message :initarg :message :reader message)))
 ;; ← to do: make these condition classes more sophisticated
 
-(defun read-conf-file (fileName cfg); reading config file  ok
+(defun read-conf-file (fileName cfg)
   (let ((fName (cffi:foreign-string-alloc fileName)))
     (when (= config-false (%configReadFile cfg fName))
       (case (cffi:foreign-slot-value cfg '(:struct config-t) 'error-type)
@@ -57,19 +57,6 @@
 (defun destroy-conf-object (cfg)  "frees the memory allocated for the config-t object"
   (%ConfigDestroy cfg)
   (cffi-sys:foreign-free cfg))
-
-(defun read-conf-string (cfgStruc paramName); this function perhaps is not needed because its functionality is duplicated by (more general) read-structure
-  (cffi:with-foreign-pointer-as-string (ant 255)
-    (cffi:with-foreign-pointer (buf psi); pointer to a pointer
-      (if (= config-false (%lookupString cfgStruc paramName buf))
-	(case (cffi:foreign-slot-value cfgStruc '(:struct config-t) 'error-type)
-	  (:config-err-file-io (error 'conf-file-read-error "could not read config file"))
-	  (:config-err-parse   (error 'config-parse-error  "parse error on config file ~s, line ~d: ~s"
-				      (cffi:foreign-slot-value cfgStruc '(:struct config-t) 'error-file)
-				      (cffi:foreign-slot-value cfgStruc '(:struct config-t) 'error-line)
-				      (cffi:foreign-slot-value cfgStruc '(:struct config-t) 'error-text)))
-	  (otherwise  (error "unspecified libconfig error, perhaps the specified parameter not found" )))
-	(setf ant (cffi:mem-ref buf :pointer))))))
 
 (defun read-subconf-string (cfgStruc paramName)
   (cffi:with-foreign-pointer-as-string (ant 255)
@@ -112,7 +99,7 @@
        (:config-type-long (%getLong cfgS))
        (:config-type-string (%getString cfgS))
        (:config-type-bool (%getBool cfgS))
-       (otherwise  (error "libconfig: unknown structure type ~a" stt)))))); tested 2016-06-01
+       (otherwise  (error "libconfig: unknown structure type ~a" stt)))))); tested 2016-07-02
 
 (defmacro with-read-config-file (name &rest body)
   (setf cfg (gensym)) (setf root (gensym)) ; unique variable names, also used in other macros

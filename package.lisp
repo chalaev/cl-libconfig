@@ -7,7 +7,7 @@
     (:use :common-lisp :cffi)
     (:export
      #:read-file
-     #:write-new #:config-lookup #:config-lookup-from ; tmp
+     #:write-new #:config-lookup #:config-lookup-from  ; tmp
      #:conf-entry-not-found #:conf-file-read-error #:config-parse-error ; conditions
      #:with-read-config-file #:with-write-config-file #:read-setting #:write-new
      #:create-conf-from-file #:read-structure ; high-level macros and functions

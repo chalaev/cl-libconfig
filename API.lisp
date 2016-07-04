@@ -1,6 +1,7 @@
 ;; -*-coding: utf-8;-*-
-;; libconfig/API.lisp Time-stamp: <2015-11-03 14:43 EST by Oleg SHALAEV http://chalaev.com >
+;; libconfig/API.lisp Time-stamp: <2016-07-03 13:12 EDT by Oleg SHALAEV http://chalaev.com >
 ;; see /usr/include/libconfig.h
+;; error 2016-07-03 external function config_lookup_from is undefined!
 (in-package #:libconfig)
 (cffi:defcfun ("config_init" init-conf-object) :void (cfgP :pointer))
 (cffi:defcfun ("config_destroy" %ConfigDestroy) :void (cfgP :pointer))
@@ -23,7 +24,12 @@
 ;; Function: config_setting_t * config_lookup (const config_t * config, const char * path)
 (cffi:defcfun ("config_lookup" config-lookup) :pointer (cfgP :pointer) (property :string))
 ;; Function: config_setting_t * config_setting_lookup (const config_setting_t * setting, const char * path)
-(cffi:defcfun ("config_lookup_from" config-lookup-from) :pointer (cfgP :pointer) (property :string))
+
+;;======================== libconfig-dev version incompatibility: ver.1.4.9 vs ver.1.5.0
+(if (and (= verAPI-major 1) (< verAPI-minor 5)); config_lookup_from was renamed into config_setting_lookup
+    (cffi:defcfun ("config_lookup_from" config-lookup-from) :pointer (cfgP :pointer) (property :string))
+    (cffi:defcfun ("config_setting_lookup" config-lookup-from) :pointer (cfgP :pointer) (property :string)))
+
 (cffi:defcfun ("config_setting_lookup_string" %CSlookupString)  :int (cfgP :pointer) (property :string) (value :pointer))
 (cffi:defcfun ("config_setting_lookup_int" %CSlookupInt)  :int (cfgP :pointer) (property :string) (value :pointer))
 (cffi:defcfun ("config_setting_lookup_int64" %CSlookupLong)  :int (cfgP :pointer) (property :string) (value :pointer))
@@ -52,7 +58,3 @@
 (cffi:defcfun ("config_lookup_int64" %lookupLong) :int (cfgP :pointer) (property :string) (value :pointer))
 (cffi:defcfun ("config_lookup_float" %lookupFloat)   :int (cfgP :pointer) (property :string) (value :pointer))
 (cffi:defcfun ("config_lookup_bool" %lookupBool)    :int (cfgP :pointer) (property :string) (value :pointer))
-;; usage example:
-;; (defparameter cfg (libconfig:create-conf-from-file "test-3.conf"))
-;; (libconfig:read-conf-string cfg "material")
-;; (libconfig:destroy-conf-object cfg)

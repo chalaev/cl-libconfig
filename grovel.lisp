@@ -46,3 +46,7 @@
 
 (constant (config-true "CONFIG_TRUE")) ; these constants do not need exporting, they are anyway available after the package is loaded
 (constant (config-false "CONFIG_FALSE"))
+
+(constant (verAPI-major "LIBCONFIG_VER_MAJOR"))
+(constant (verAPI-minor "LIBCONFIG_VER_MINOR"))
+;; (constant (verAPI-revision "LIBCONFIG_VER_REVISION"))
