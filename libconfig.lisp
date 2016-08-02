@@ -1,5 +1,4 @@
 ;; libconfig/libconfig.lisp Time-stamp: <2016-07-03 13:44 EDT by Oleg SHALAEV http://chalaev.com >
-;; 2016-07-03  after I changed config-lookup-from → config-lookup, tests fail
 (in-package #:libconfig)
 
 (defun %config-root-setting (cfgP)
@@ -90,7 +89,7 @@
      (loop for i from 0 for element = (setting-nth cfgS i) while (not (cffi-sys:null-pointer-p element)) collect (read-structure element))
      (case stt
        (:config-type-group
-	(let ((table (make-hash-table :test 'equal)))
+	(let ((table (make-hash-table :test 'equal))); add ":synchronized t" (experimental feature for multithreading) here?
 	  (loop for i from 0 for element = (setting-nth cfgS i) while (not (cffi-sys:null-pointer-p element))
 	     do (setf (gethash (intern (string-upcase (setting-name element))) table) (read-structure element)))
 	  table))

@@ -1,4 +1,5 @@
-;; The code below is cut from another project.
+;; The code below is cut from another project, see
+;; https://github.com/chalaev/esy/blob/master/start.lisp
 ;; Macro with-read-config-file allows reading parameters of different types.
 ;; If the requested parameter is unspecified in the configuration file
 ;; the default value is used.

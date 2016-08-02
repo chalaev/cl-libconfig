@@ -1,12 +1,12 @@
 ;; libconfig/tests/1.lisp Time-stamp: <2016-06-01 18:06 EDT by Oleg SHALAEV http://chalaev.com >
-;; reading data from a real-life configuration file also used by a C++ program
-;; TODO: test with http://www.hyperrealm.com/libconfig/test.cfg.txt
+;; read/write data from/to a configuration file
 
 (defparameter homeDir (namestring (user-homedir-pathname)))
 (ql:quickload :libconfig)
 
 (libconfig:with-read-config-file "1.conf"
-  (format t "This is the configuration file for ~s.~%" (libconfig:read-setting "material"  :default "GaAs")))
+  (format t "This is the configuration file for ~s.~%"
+	  (libconfig:read-setting "material"  :default "GaAs"))); default value is used if the setting is not found
 ;;  ==> This is the configuration file for "CdTe".
 
 ;; The following creates a simple config file ~/tmp.conf:
