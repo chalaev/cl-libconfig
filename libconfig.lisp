@@ -52,6 +52,9 @@
   (let ((cfg (create-empty-conf)))
     (read-conf-file fileName cfg)
     cfg))
+;; Syntax: (create-conf-from-file fileName)
+;; Creates configuration object (see libconfig manual) and reads conf-file into this object.
+;; Returns this configuration object.
 
 (defun destroy-conf-object (cfg)  "frees the memory allocated for the config-t object"
   (%ConfigDestroy cfg)
@@ -79,7 +82,7 @@
     (%CSlookupBool cfgStruc paramName buf)
     (cffi:mem-ref buf :boolean)))
 
-(defun read-structure (cfgS); high-level reader, reads any structures, including nested (вложенные)
+(defun read-structure (cfgS); high-level reader, reads any structures, including nested
   (let ((stt (cffi:foreign-slot-value cfgS '(:struct config-setting-t) 'type)))
     (if
      (or
@@ -119,39 +122,69 @@
 
 (defmacro with-write-config-file (name &rest body)
   (setf root (gensym))
-  `(let* ((,cfg (create-empty-conf));; will raise exception on error
+  `(let* ((cfg (create-empty-conf));; will raise exception on error
+	  (,root (%config-root-setting cfg)))
+       (progn ,@body)
+       (write-conf-file ,name cfg)
+       (destroy-conf-object cfg)))
+
+(defmacro with-rw-config-file (name &rest body)
+  (setf cfg (gensym)) (setf root (gensym)) ; unique variable names, also used in other macros
+  `(let* ((,cfg (create-conf-from-file ,name));; will raise exception on error
 	  (,root (%config-root-setting ,cfg)))
        (progn ,@body)
        (write-conf-file ,name ,cfg)
        (destroy-conf-object ,cfg)))
 
-(defmacro write-new (parName value &key type); to be used from inside of with-write-config-file
-  ;; where parType is one of atomic config types, e.g., :config-type-int
-  ;; if setting already exixsts, it will be overwritten
-  "creates and writes the value"
-  `(let* ((Cstr (cffi:foreign-string-alloc ,parName))
-	  (setting (config-lookup-from ,root Cstr))
-	  (res))
-     (unless (cffi-sys:null-pointer-p setting)
-       (unless (equal (%config-setting-type setting) ,type)
-	 (%config-remove-setting ,root Cstr)))
-     (when (cffi-sys:null-pointer-p setting)
-       (setf setting (%config-add-setting ,root Cstr ,type)))
-     (setf res
-	   (case ,type
-	     (:config-type-int (%config-set-int setting ,value))
-	     (:config-type-int64 (%config-set-int64 setting ,value))
-	     (:config-type-float
-	      (if (sb-int:double-float-p ,value)
-		  (%config-set-float setting ,value)
-		  (%config-set-float setting (coerce ,value 'double-float))))
-	     (:config-type-string
-	      (progn
-		(foreign-string-free Cstr)
-		(setf Cstr (cffi:foreign-string-alloc ,value))
-		(%config-set-string setting Cstr)))
-	     (:config-type-bool  (%config-set-int setting ,value))))
-;;	     (otherwise  (error "wrong parameter type" ))))
-     (unless (= config-true res)
-       (error 'config-parse-error "could not set set conf parameter"))
-     (foreign-string-free Cstr)))
+(defun new-list-elem (parent val)
+  "adds i-th element to the parent list"
+  (typecase val
+    (integer (%config-set-int-elem    parent -1 val))
+    (boolean (%config-set-bool-elem   parent -1 val))
+    (string  (%config-set-string-elem parent -1 val))
+    (cons ; new list element is a list itself
+     (let ((child (%config-add-parent parent 'nil :config-type-list)))
+       (loop for i from 0 to (1- (length value)) do
+	    (new-list-elem child (nth i value)))))
+    (hash-table ; new list element is a hash table
+     (let ((child (%config-add-parent parent 'nil :config-type-group)))
+       (maphash #'(lambda (k v) (new-group-elem child (remove #\Space (format 'nil " ~S" key)) val)) value)))
+    (otherwise ; single-float or double-float or ratio
+     (%config-set-float-elem  parent -1 (coerce val 'double-float)))))
+
+(defun new-group-elem (parent key value)
+  "adds named (by the string key) element to the parent group"
+  (let* ((Cstr (cffi:foreign-string-alloc key))
+	  (child (config-lookup-from parent Cstr)) (res))
+    (unless (cffi-sys:null-pointer-p child) (config-remove-setting parent Cstr))
+    (setf child (%config-add-setting parent Cstr
+       (typecase value
+	 (integer :config-type-int)
+	 (string :config-type-string)
+	 (boolean :config-type-bool)
+	 (cons :config-type-list)
+	 (hash-table :config-type-group)
+	 (otherwise  :config-type-float)))) ; single-float or double-float or ratio
+    (typecase value
+      (integer  (%config-set-int child value))
+      (boolean (%config-set-bool child value))
+      (string
+       (foreign-string-free Cstr); reusing Cstr
+       (setf Cstr (cffi:foreign-string-alloc value))
+       (%config-set-string child Cstr))
+      (cons
+       (loop for i from 0 to (1- (length value)) do
+		  (new-list-elem child (nth i value))))
+      (hash-table
+       (maphash #'(lambda (key val)
+		    (new-group-elem child (remove #\Space (format 'nil " ~S" key)) val)) value))
+      (otherwise  ; single-float or double-float or ratio
+       (%config-set-float child (coerce value 'double-float))))))
+
+(defmacro write-structure (parName val) ; to be used instead of simple-write
+  "writes arbitrary data to the config file"
+  `(new-group-elem ,root ,parName ,val))
+
+(defmacro remove-setting (parName) ; to be used instead of simple-write
+  "removes a setting from the config file"
+  `(config-remove-setting  ,root ,parName))

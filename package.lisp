@@ -6,18 +6,9 @@
     ;; (:nicknames :cl-libconfig)
     (:use :common-lisp :cffi)
     (:export
-     #:read-file
-     #:write-new #:config-lookup #:config-lookup-from  ; perhaps must not be exported
-     ;; #:conf-entry-not-found
-     #:conf-file-read-error #:config-parse-error ; conditions
-     #:with-read-config-file #:with-write-config-file #:read-setting #:write-new
-     ;; #:create-conf-from-file
-     ;; #:read-structure ; high-level macros and functions
-     ;; #:destroy-conf-object     #:read-conf-file #:explain-error ; low-level functions
-     ;; #:read-conf-string #:read-conf-float #:create-empty-conf
-     ;; #:read-subconf-string #:read-subconf-int #:read-subconf-long #:read-subconf-float #:read-subconf-bool
-     ;; #:setting-type #:setting-name #:setting-length #:setting-nth
-     ))
+     #:with-read-config-file #:with-write-config-file #:with-rw-config-file
+     #:read-setting #:write-structure  #:remove-setting
+     #:conf-file-read-error #:config-parse-error)) ; conditions
 
 (cffi:define-foreign-library libconfig (t (:default "libconfig")))
 (cffi:use-foreign-library libconfig)

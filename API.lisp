@@ -1,17 +1,16 @@
 ;; -*-coding: utf-8;-*-
 ;; libconfig/API.lisp Time-stamp: <2016-07-03 13:12 EDT by Oleg SHALAEV http://chalaev.com >
 ;; see /usr/include/libconfig.h
-;; error 2016-07-03 external function config_lookup_from is undefined!
 (in-package #:libconfig)
 (cffi:defcfun ("config_init" init-conf-object) :void (cfgP :pointer))
-(cffi:defcfun ("config_destroy" %ConfigDestroy) :void (cfgP :pointer))
+(cffi:defcfun ("config_destroy" %ConfigDestroy) :void (cfgP :pointer)); frees memory
 (cffi:defcfun ("config_read_file" %configReadFile)  :int  (cfgP :pointer) (configFileName :string))
 (cffi:defcfun ("config_write_file" %configWriteFile)  :int  (cfgP :pointer) (configFileName :string))
 
 ;; Function: config_setting_t * config_setting_add (config_setting_t * parent, const char * name, int type)
 (cffi:defcfun ("config_setting_add" %config-add-setting) :pointer (cfgP :pointer) (property :string) (type CStype))
 ;; Function: int config_setting_remove (config_setting_t * parent, const char * name)
-(cffi:defcfun ("config_setting_remove" %config-remove-setting) :int (cfgP :pointer) (property :string))
+(cffi:defcfun ("config_setting_remove" config-remove-setting) :int (cfgP :pointer) (property :string))
 
 (cffi:defcfun ("config_setting_get_elem" setting-nth) :pointer (cfgP :pointer) (index :int))
 (cffi:defcfun ("config_setting_get_member" %getGroupMember) :pointer (cfgP :pointer) (property :string))
@@ -47,6 +46,19 @@
 (cffi:defcfun ("config_setting_set_int64" %config-set-int64) :int (cfgP :pointer) (value :long))
 (cffi:defcfun ("config_setting_set_float" %config-set-float) :int (cfgP :pointer) (value :double))
 (cffi:defcfun ("config_setting_set_bool" %config-set-bool) :int (cfgP :pointer) (value :boolean))
+
+;; begin new block 2016-08-03
+;; Function: config_setting_t * config_setting_set_int_elem (config_setting_t * setting, int index, int value)
+;; Function: config_setting_t * config_setting_set_int64_elem (config_setting_t * setting, int index, long long value)
+;; Function: config_setting_t * config_setting_set_float_elem (config_setting_t * setting, int index, double value)
+;; Function: config_setting_t * config_setting_set_bool_elem (config_setting_t * setting, int index, int value)
+;; Function: config_setting_t * config_setting_set_string_elem (config_setting_t * setting, int index, const char * value)
+(cffi:defcfun ("config_setting_set_int_elem" %config-set-int-elem) :pointer (cs :pointer) (i :int) (value :int)); tested 2016-08-03
+(cffi:defcfun ("config_setting_set_int64_elem" %config-set-int64-elem) :pointer (cs :pointer) (i :int) (value :long))
+(cffi:defcfun ("config_setting_set_float_elem" %config-set-float-elem) :pointer (cs :pointer) (i :int) (value :double))
+(cffi:defcfun ("config_setting_set_bool_elem" %config-set-bool-elem) :pointer (cs :pointer) (i :int) (value :boolean))
+(cffi:defcfun ("config_setting_set_string_elem" %config-set-string-elem) :pointer (cs :pointer) (i :int) (value :string))
+;; end new block 2016-08-03
 
 ;;==================
 ;; the following functions duplicate functionality of the above defined ones:

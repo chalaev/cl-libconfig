@@ -1,12 +1,15 @@
-  -*- coding: utf-8 -*-
 Time-stamp: <2016-08-01 19:26 EDT by Oleg SHALAEV http://chalaev.com >
 Please report bugs/suggestions to chalaev@gmail.com
 
 This package allows using standard [[http://www.hyperrealm.com/libconfig/][libconfig]] library in Common LISP.
 Requires linux libconfig-dev package.
 
-Apart from its usage as a handy configuration tool, [[http://www.hyperrealm.com/libconfig/][libconfig]] is also a universal language for communication between programs written in different programming
-languages and in different OS.
+[[http://www.hyperrealm.com/libconfig/][libconfig]] supports several important data types, see write-structure description below.
+Apart from its usage as a handy configuration tool, [[http://www.hyperrealm.com/libconfig/][libconfig]] is also a universal
+language for communication between programs written in different programming languages
+and in different OS.
+
+Note that [[http://www.hyperrealm.com/libconfig/libconfig_manual.html][libconfig is not thread-safe]].
 
 * Quick start
 I assume that sbcl is already installed and quicklisp resides in home directory.
@@ -16,49 +19,66 @@ lisp is also installed locally, ~/local/bin/sbcl
 2. Place the files
    API.lisp grovel.lisp libconfig.lisp package.lisp libconfig.asd
    into the direcory ~/quicklisp/local-projects/libconfig/
-3. cd tests/
-4. Simple reading of/writing to conf files is illustrated in 1.lisp which uses 1.conf
-   (see comments in both 1.lisp and 1.conf)
-   ~/local/bin/sbcl --load 1.lisp
-5. Now examine 1.lisp, 1.conf and newly created ~/tmp.conf
+3. Download "tests" directory, and cd tests/
+4. Simple reading of/writing to conf files is illustrated in change.lisp which uses change.conf
+   (see comments in both change.lisp and read-1.conf)
+   ~/local/bin/sbcl --load change.lisp
+5. Now examine change.lisp, read-1.conf and (newly created) change.conf
 6. Try other tests in this directory
 
 * Functions
-** libconfig:read-file
-Syntax: (libconfig:read-file fileName)
+** read-file
+Syntax: (read-file fileName)
 Reads entire conf-file named fileName into the (returned) hash-table.
 See usage example in tests/3.lisp
+
 * Macros
-** libconfig:with-read-config-file
+** with-read-config-file
 Syntax: (with-read-config-file fileName body)
 where fileName is the name of the conf-file to read (the conf-file must comply with the standard libconfig syntax).
-Inside this macro, function libconfig:read-setting can be used read setting.
-See usage example in tests/1.lisp and tests/2.lisp
-** libconfig:with-write-config-file
+Inside this macro, macro read-setting can be used.
+See usage example in tests/read.lisp
+** with-write-config-file
 Syntax: (with-write-config-file fileName body)
 where fileName is the name of the conf-file to write.
-Inside this macro, function libconfig:write-setting can be used write setting.
-See usage example in tests/1.lisp
-** libconfig:read-setting
+This conf-file will be newly created; an existing file wil be ovewritten.
+Inside this macro, function write-structure can be used.
+See usage example in tests/write.lisp
+** read-setting
 Syntax: (read-setting parName [default])
 where parName is the name of the parameter from the conf-file,
 and optional default parameter specifies the value to be returned in case the
 parameter is not found in the conf-file.
-See usage example in tests/1.lisp and tests/2.lisp
-** libconfig:write-new
-(To be used from inside of with-write-config-file macro.)
-Syntax: (write-new parName value type)
-Writes value (that may have quite sophisticated structure)
-into the (specified by with-write-config-file) conf-file and
-assigns name parName to this value.
-See usage example in tests/1.lisp
+See usage example in tests/read.lisp
+** with-rw-config-file
+Syntax: (with-rw-config-file fileName body)
+with-rw-config-file is similar to with-read-config-file and with-write-config-file;
+First, it reads conf-file named fileName (which must exist or the condition conf-file-read-error is raised).
+In the body one can read/erase/write conf-parameters like it is done
+inside "with-read-config-file" and "with-write-config-file" environments.
+See usage example in tests/change.lisp
+** write-structure
+(To be used from inside of "with-rw-config-file" and "with-write-config-file" macros.)
+Syntax: (write-structure parName value)
+where value must have one of the following types:
+integer string boolean cons hash single-float double-float ratio,
+The value parameter can also have nested structure:
+for example, it can be an array/hash of any of above-enumerated types.
+See usage examples in tests/write.lisp and tests/change.lisp
+
+** remove-setting
+(To be used from inside of with-rw-config-file macro.)
+Removes a setting.
+Syntax: (remove-setting parName)
+where parName is the name of the setting which we want to remove.
+See usage example in tests/change.lisp
 
 * Exceptions
-** libconfig:conf-file-read-error
+** conf-file-read-error
 This condition occurs when the conf-file does not exist or is unreadable.
-See usage example in tests/2.lisp
+See usage example in tests/read.lisp
 
-** libconfig:config-parse-error
+** config-parse-error
 This condition occurs when the conf-file has grammar errors.
 This often happens for the conf-files that have been writen manually.
 An extra bracket, brace, or a missing semicolon in the conf-file will raise this condition.
