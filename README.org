@@ -29,8 +29,8 @@ lisp is also installed locally, ~/local/bin/sbcl
 * Functions
 ** read-file
 Syntax: (read-file fileName)
-Reads entire conf-file named fileName into the (returned) hash-table.
-See usage example in tests/3.lisp
+Reads entire conf-file named fileName into the hash-table.
+See usage example in tests/read.lisp
 
 * Macros
 ** with-read-config-file
@@ -73,7 +73,7 @@ Syntax: (remove-setting parName)
 where parName is the name of the setting which we want to remove.
 See usage example in tests/change.lisp
 
-* Exceptions
+* Exceptions (conditions)
 ** conf-file-read-error
 This condition occurs when the conf-file does not exist or is unreadable.
 See usage example in tests/read.lisp

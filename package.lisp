@@ -7,7 +7,7 @@
     (:use :common-lisp :cffi)
     (:export
      #:with-read-config-file #:with-write-config-file #:with-rw-config-file
-     #:read-setting #:write-structure  #:remove-setting
+     #:read-file #:read-setting #:write-structure  #:remove-setting
      #:conf-file-read-error #:config-parse-error)) ; conditions
 
 (cffi:define-foreign-library libconfig (t (:default "libconfig")))

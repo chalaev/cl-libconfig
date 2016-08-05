@@ -23,4 +23,8 @@
   (defparameter junkFiles       (libconfig:read-setting "junkFiles" :default '("tmp*" "*.tmp$" "*.lock$" "*.log$" "*.aux$"))))
   (libconfig:conf-file-read-error () (format t "could not read config file~%"))); complain if the file is unreadable
 
+;; finally let us demonstrate a reading of entire conf file into a hash:
+(defparameter fullConfig (libconfig:read-file "read-3.conf"))
+(defparameter lint (gethash 'bigint (gethash 'misc fullConfig)))
+
 (quit)

@@ -98,7 +98,7 @@
 	  table))
        (:config-type-float (%getFloat cfgS))
        (:config-type-int (%getInt cfgS))
-       (:config-type-long (%getLong cfgS))
+       (:config-type-int64 (%getLong cfgS))
        (:config-type-string (%getString cfgS))
        (:config-type-bool (%getBool cfgS))
        (otherwise  (error "libconfig: unknown structure type ~a" stt)))))); tested 2016-07-02

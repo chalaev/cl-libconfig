@@ -47,19 +47,16 @@
 (cffi:defcfun ("config_setting_set_float" %config-set-float) :int (cfgP :pointer) (value :double))
 (cffi:defcfun ("config_setting_set_bool" %config-set-bool) :int (cfgP :pointer) (value :boolean))
 
-;; begin new block 2016-08-03
 ;; Function: config_setting_t * config_setting_set_int_elem (config_setting_t * setting, int index, int value)
 ;; Function: config_setting_t * config_setting_set_int64_elem (config_setting_t * setting, int index, long long value)
 ;; Function: config_setting_t * config_setting_set_float_elem (config_setting_t * setting, int index, double value)
 ;; Function: config_setting_t * config_setting_set_bool_elem (config_setting_t * setting, int index, int value)
 ;; Function: config_setting_t * config_setting_set_string_elem (config_setting_t * setting, int index, const char * value)
-(cffi:defcfun ("config_setting_set_int_elem" %config-set-int-elem) :pointer (cs :pointer) (i :int) (value :int)); tested 2016-08-03
+(cffi:defcfun ("config_setting_set_int_elem" %config-set-int-elem) :pointer (cs :pointer) (i :int) (value :int))
 (cffi:defcfun ("config_setting_set_int64_elem" %config-set-int64-elem) :pointer (cs :pointer) (i :int) (value :long))
 (cffi:defcfun ("config_setting_set_float_elem" %config-set-float-elem) :pointer (cs :pointer) (i :int) (value :double))
 (cffi:defcfun ("config_setting_set_bool_elem" %config-set-bool-elem) :pointer (cs :pointer) (i :int) (value :boolean))
 (cffi:defcfun ("config_setting_set_string_elem" %config-set-string-elem) :pointer (cs :pointer) (i :int) (value :string))
-;; end new block 2016-08-03
-
 ;;==================
 ;; the following functions duplicate functionality of the above defined ones:
 ;; These functions look up the value of the setting in the configuration config specified by the path path. They store the value of the setting at value and return

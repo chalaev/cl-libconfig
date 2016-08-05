@@ -1,0 +1,1 @@
+1. See tests/read-3.conf: somehow I can not read hex numbers.
