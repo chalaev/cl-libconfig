@@ -1,5 +1,6 @@
-Time-stamp: <2016-08-01 19:26 EDT by Oleg SHALAEV http://chalaev.com >
-Please report bugs/suggestions to chalaev@gmail.com
+#+TITLE:     cl-libconfig
+#+AUTHOR:    Oleg Shalaev
+#+EMAIL:     chalaev@gmail.com
 
 This package allows using standard [[http://www.hyperrealm.com/libconfig/][libconfig]] library in Common LISP.
 Requires linux libconfig-dev package.
@@ -14,17 +15,25 @@ Note that [[http://www.hyperrealm.com/libconfig/libconfig_manual.html][libconfig
 * Quick start
 I assume that sbcl is already installed and quicklisp resides in home directory.
 lisp is also installed locally, ~/local/bin/sbcl
-
-1. Install libconfig-dev (for Debian and Ubuntu linux: apt-get install libconfig-dev).
-2. Place the files
-   API.lisp grovel.lisp libconfig.lisp package.lisp libconfig.asd
-   into the direcory ~/quicklisp/local-projects/libconfig/
-3. Download "tests" directory, and cd tests/
-4. Simple reading of/writing to conf files is illustrated in change.lisp which uses change.conf
-   (see comments in both change.lisp and read-1.conf)
+1. Install libconfig-dev:
+   #+BEGIN_SRC sh
+   apt-get install libconfig-dev
+   #+END_SRC
+2. download the code (I assume that your quicklisp directory is ~/quicklisp/):
+   #+BEGIN_SRC sh
+   cd ~/quicklisp/local-projects/
+   git clone https://github.com/chalaev/cl-libconfig
+   mv cl-libconfig/tests ~/test-cl-libconfig
+   #+END_SRC
+3. Ensure that the tests are running ok:
+   #+BEGIN_SRC sh
+   ~/local/bin/sbcl --load read.lisp
+   ~/local/bin/sbcl --load write.lisp
    ~/local/bin/sbcl --load change.lisp
-5. Now examine change.lisp, read-1.conf and (newly created) change.conf
-6. Try other tests in this directory
+   #+END_SRC
+4. Now examine ~/test-cl-libconfig/*.lisp, read-1.conf and (newly created) change.conf.
+   The test files are designed to be self-explanatory; they show how one can read, wrote, and change
+conf files in common lisp using this software.
 
 * Functions
 ** read-file

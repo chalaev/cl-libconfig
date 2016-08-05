@@ -1,4 +1,5 @@
 ;; libconfig/libconfig.lisp Time-stamp: <2016-07-03 13:44 EDT by Oleg SHALAEV http://chalaev.com >
+;; Please report bugs/suggestions to chalaev@gmail.com
 (in-package #:libconfig)
 
 (defun %config-root-setting (cfgP)
