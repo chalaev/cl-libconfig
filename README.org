@@ -1,9 +1,12 @@
 #+TITLE:     cl-libconfig
 #+AUTHOR:    Oleg Shalaev
 #+EMAIL:     chalaev@gmail.com
+#+OPTIONS: ^:nil
+#+LANGUAGE:  en
+#+LINK_HOME: http://chalaev.com/projects.html
 
-This package allows using standard [[http://www.hyperrealm.com/libconfig/][libconfig]] library in Common LISP.
-Requires linux libconfig-dev package.
+This quicklisp package allows using standard [[http://www.hyperrealm.com/libconfig/][libconfig]] library in Common LISP on linux.
+Requires  linux libconfig-dev package.
 
 [[http://www.hyperrealm.com/libconfig/][libconfig]] supports several important data types, see write-structure description below.
 Apart from its usage as a handy configuration tool, [[http://www.hyperrealm.com/libconfig/][libconfig]] is also a universal
@@ -13,8 +16,8 @@ and in different OS.
 Note that [[http://www.hyperrealm.com/libconfig/libconfig_manual.html][libconfig is not thread-safe]].
 
 * Quick start
-I assume that sbcl is already installed and quicklisp resides in home directory.
-lisp is also installed locally, ~/local/bin/sbcl
+I assume that quicklisp is already installed and resides in home directory;
+lisp is also installed locally: ~/local/bin/sbcl
 1. Install libconfig-dev:
    #+BEGIN_SRC sh
    apt-get install libconfig-dev
@@ -32,35 +35,50 @@ lisp is also installed locally, ~/local/bin/sbcl
    ~/local/bin/sbcl --load change.lisp
    #+END_SRC
 4. Now examine ~/test-cl-libconfig/*.lisp, read-1.conf and (newly created) change.conf.
-   The test files are designed to be self-explanatory; they show how one can read, wrote, and change
-conf files in common lisp using this software.
+   Take a look on tests/*.lisp files which are designed to be self-explanatory; they show how one can read, wrote, and change
+   conf files in common lisp using this software.
 
 * Functions
 ** read-file
-Syntax: (read-file fileName)
+Syntax:
+#+BEGIN_SRC
+(read-file fileName)
+#+END_SRC
 Reads entire conf-file named fileName into the hash-table.
 See usage example in tests/read.lisp
 
 * Macros
 ** with-read-config-file
-Syntax: (with-read-config-file fileName body)
+Syntax:
+#+BEGIN_SRC
+(with-read-config-file fileName body)
+#+END_SRC
 where fileName is the name of the conf-file to read (the conf-file must comply with the standard libconfig syntax).
 Inside this macro, macro read-setting can be used.
 See usage example in tests/read.lisp
 ** with-write-config-file
-Syntax: (with-write-config-file fileName body)
+Syntax:
+#+BEGIN_SRC
+(with-write-config-file fileName body)
+#+END_SRC
 where fileName is the name of the conf-file to write.
 This conf-file will be newly created; an existing file wil be ovewritten.
 Inside this macro, function write-structure can be used.
 See usage example in tests/write.lisp
 ** read-setting
-Syntax: (read-setting parName [default])
+Syntax:
+#+BEGIN_SRC
+(read-setting parName [default])
+#+END_SRC
 where parName is the name of the parameter from the conf-file,
 and optional default parameter specifies the value to be returned in case the
 parameter is not found in the conf-file.
 See usage example in tests/read.lisp
 ** with-rw-config-file
-Syntax: (with-rw-config-file fileName body)
+Syntax:
+#+BEGIN_SRC
+(with-rw-config-file fileName body)
+#+END_SRC
 with-rw-config-file is similar to with-read-config-file and with-write-config-file;
 First, it reads conf-file named fileName (which must exist or the condition conf-file-read-error is raised).
 In the body one can read/erase/write conf-parameters like it is done
@@ -68,20 +86,24 @@ inside "with-read-config-file" and "with-write-config-file" environments.
 See usage example in tests/change.lisp
 ** write-structure
 (To be used from inside of "with-rw-config-file" and "with-write-config-file" macros.)
-Syntax: (write-structure parName value)
+Syntax:
+#+BEGIN_SRC
+(write-structure parName value)
+#+END_SRC
 where value must have one of the following types:
-integer string boolean cons hash single-float double-float ratio,
+integer string boolean cons hash single-float double-float ratio.
 The value parameter can also have nested structure:
 for example, it can be an array/hash of any of above-enumerated types.
 See usage examples in tests/write.lisp and tests/change.lisp
-
 ** remove-setting
 (To be used from inside of with-rw-config-file macro.)
 Removes a setting.
-Syntax: (remove-setting parName)
+Syntax:
+#+BEGIN_SRC
+(remove-setting parName)
+#+END_SRC
 where parName is the name of the setting which we want to remove.
 See usage example in tests/change.lisp
-
 * Exceptions (conditions)
 ** conf-file-read-error
 This condition occurs when the conf-file does not exist or is unreadable.
